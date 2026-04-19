@@ -2,3 +2,6 @@ pandas>=2.0
 numpy>=2.0
 scikit-learn>=1.5
 shap>=0.50
+fastapi
+uvicorn
+python-multipart

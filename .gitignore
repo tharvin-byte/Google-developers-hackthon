@@ -1,0 +1,54 @@
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python environment and local config
+.env
+.env.*
+*.local
+
+# Build artifacts and temp files
+build/
+dist/
+out/
+*.tmp
+*.temp
+
+# Angular / frontend
+frontend/node_modules/
+frontend/.angular/
+frontend/out-tsc/
+frontend/dist/
+frontend/coverage/
+
+# Test artifacts
+.pytest_cache/
+coverage/
+
+# Jupyter
+.ipynb_checkpoints/
