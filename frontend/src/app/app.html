@@ -1,0 +1,142 @@
+<div class="container animate-fade-in">
+  <header>
+    <div class="logo">
+      <span class="gradient-text">FairSight</span>
+      <span class="subtitle">AI Fairness Audit System</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- Upload Section -->
+    <section class="upload-section" *ngIf="!result()">
+      <div class="glass-card upload-container">
+        <h2>Audit New Dataset</h2>
+        <p class="text-muted">Upload your model predictions (CSV) to start the multi-stage fairness analysis.</p>
+        
+        <div class="drop-zone" [class.has-file]="file()">
+          <input type="file" id="fileInput" (change)="onFileSelected($event)" accept=".csv">
+          <label for="fileInput">
+            <div class="icon" *ngIf="!file()">📁</div>
+            <div class="file-info" *ngIf="file()">
+              <span class="file-name">{{ file()?.name }}</span>
+              <span class="file-size">{{ (file()?.size! / 1024).toFixed(2) }} KB</span>
+            </div>
+            <span class="label-text">{{ file() ? 'Change File' : 'Drop CSV here or click to browse' }}</span>
+          </label>
+        </div>
+
+        <button class="btn btn-primary" [disabled]="!file() || loading()" (click)="runAudit()">
+          <span *ngIf="!loading()">Run Fairness Audit</span>
+          <span *ngIf="loading()" class="loader">Analysing...</span>
+        </button>
+
+        <div class="error-msg" *ngIf="error()">
+          {{ error() }}
+        </div>
+      </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="results-section" *ngIf="result()">
+      <div class="dashboard-header">
+        <button class="btn-back" (click)="result.set(null); file.set(null)">← New Audit</button>
+        <h1>Audit Report</h1>
+      </div>
+
+      <div class="overview-grid">
+        <!-- Summary Card -->
+        <div class="glass-card summary-card">
+          <div class="score-circle" [style.border-color]="getScoreColor(result()?.results.stage3.weighted_score)">
+            <span class="score-value">{{ (result()?.results.stage3.weighted_score * 100).toFixed(0) }}%</span>
+            <span class="score-label">Fairness Score</span>
+          </div>
+          <div class="verdict-badges">
+            <div class="badge" [ngClass]="getVerdictClass(result()?.results.stage3.verdict)">
+              {{ result()?.results.stage3.verdict }}
+            </div>
+            <div class="badge risk-badge" [attr.data-risk]="result()?.results.stage1.risk_level">
+              {{ result()?.results.stage1.risk_level }} RISK
+            </div>
+          </div>
+        </div>
+
+        <!-- Confidence & Metadata -->
+        <div class="glass-card confidence-card">
+          <h3>Expert Assessment</h3>
+          <div class="confidence-level">
+            <span class="label">Confidence:</span>
+            <span class="value" [class.high]="result()?.results.stage5.confidence === 'High'">
+              {{ result()?.results.stage5.confidence }}
+            </span>
+          </div>
+          <p class="reason">{{ result()?.results.stage5.confidence_reason }}</p>
+          
+          <div class="metrics-row">
+            <div class="metric-item">
+              <span class="m-label">FPR Difference</span>
+              <span class="m-value" [class.warn]="result()?.results.stage2.fpr_difference > 0.05">
+                {{ (result()?.results.stage2.fpr_difference * 100).toFixed(1) }}%
+              </span>
+            </div>
+            <div class="metric-item">
+              <span class="m-label">TPR Difference</span>
+              <span class="m-value" [class.warn]="result()?.results.stage2.tpr_difference > 0.05">
+                {{ (result()?.results.stage2.tpr_difference * 100).toFixed(1) }}%
+              </span>
+            </div>
+          </div>
+
+          <div class="conflict-alert" *ngIf="result()?.results.stage4.conflict_detected">
+            <span class="alert-icon">⚠️</span>
+            <span>Conflict Detected: {{ result()?.results.stage4.conflicting_pair[0] }} vs {{ result()?.results.stage4.conflicting_pair[1] }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explanation & Insights -->
+      <div class="glass-card insight-card">
+        <div class="card-header">
+          <span class="icon">✨</span>
+          <h2>AI Insights</h2>
+        </div>
+        <p class="explanation-text">{{ result()?.results.stage5.explanation }}</p>
+        <div class="shap-insight">
+          <strong>Key Drivers:</strong>
+          <p>{{ result()?.results.stage5.shap_insight }}</p>
+        </div>
+      </div>
+
+      <div class="details-grid">
+        <!-- Most Affected Group -->
+        <div class="glass-card affected-group-card">
+          <h3>Most Affected Group</h3>
+          <p class="affected-label">{{ result()?.results.stage5.most_affected_group }}</p>
+          <div class="metrics-mini">
+            <div class="metric">
+              <span class="m-label">Outcome Gap</span>
+              <span class="m-value">{{ (result()?.results.stage1.outcome_gap * 100).toFixed(2) }}%</span>
+            </div>
+            <div class="metric">
+              <span class="m-label">Disparity Ratio</span>
+              <span class="m-value">{{ result()?.results.stage2.disparity_ratio.toFixed(2) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="glass-card remediation-card">
+          <h3>Recommended Actions</h3>
+          <ul class="remediation-list">
+            <li *ngFor="let rec of result()?.results.stage5.remediation">
+              {{ rec }}
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 FairSight Pipeline. Built for Google Developers Hackathon.</p>
+  </footer>
+</div>
